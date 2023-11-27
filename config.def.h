@@ -4,18 +4,23 @@
 static const unsigned int borderpx  = 1;        /* border pixel of windows */
 static const unsigned int gappx     = 10;        /* gaps between windows */
 static const unsigned int snap      = 32;       /* snap pixel */
+static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
+static const unsigned int systrayonleft = 0;    /* 0: systray in the right corner, >0: systray on left of status text */
+static const unsigned int systrayspacing = 2;   /* systray spacing */
+static const int systraypinningfailfirst = 1;   /* 1: if pinning fails, display systray on the first monitor, False: display systray on the last monitor*/
+static const int showsystray        = 1;        /* 0 means no systray */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
 static const int vertpad            = 0;       /* vertical padding of bar */
 static const int sidepad            = 0;       /* horizontal padding of bar */
-static const char *fonts[]          = { "Terminus:size=10" };
-static const char dmenufont[]       = "Terminus:size=10";
-static const char norm_fg[]         = "#e0ffff"; 
-static const char norm_bg[]         = "#091833";
-static const char norm_border[]     = "#091833";
+static const char *fonts[]          = { "Terminus:size=14" };
+static const char dmenufont[]       = "Terminus:size=14";
+static const char norm_fg[]         = "#ffffff"; 
+static const char norm_bg[]         = "#bf0000";
+static const char norm_border[]     = "#1f0000";
 static const char sel_fg[]          = "#ffffff"; 
-static const char sel_bg[]          = "#0abdc6";
-static const char sel_border[]      = "#0abcd6"; 
+static const char sel_bg[]          = "#4d0000";
+static const char sel_border[]      = "#ff0000"; 
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
     [SchemeNorm] = { norm_fg, norm_bg, norm_border },
@@ -46,6 +51,10 @@ static const Layout layouts[] = {
 	{ "[]=",      tile },    /* first entry is default */
 	{ "><>",      NULL },    /* no layout function means floating behavior */
 	{ "[M]",      monocle },
+	{ "|M|",      centeredmaster },
+	{ ">M>",      centeredfloatingmaster },
+        { NULL,       NULL },
+
 };
 
 /* key definitions */
@@ -55,6 +64,14 @@ static const Layout layouts[] = {
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
 	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
+
+/* media keys */
+static const char *upvol[]   = { "/usr/bin/pactl", "set-sink-volume", "0", "+5%",     NULL };
+static const char *downvol[] = { "/usr/bin/pactl", "set-sink-volume", "0", "-5%",     NULL };
+static const char *mutevol[] = { "/usr/bin/pactl", "set-sink-mute",   "0", "toggle",  NULL };
+static const char *medplaypausecmd[] = { "playerctl", "play-pause",   "0", "toggle",  NULL };
+static const char *mednextcmd[] = { "playerctl", "next",   "0", NULL };
+static const char *medprevcmd[] = { "playerctl", "previous", "0", NULL };
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
@@ -79,12 +96,22 @@ static Key keys[] = {
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
         { MODKEY|ControlMask,           XK_l,      spawn,          SHCMD("xscreensaver-command --lock") },
+        { 0,                       XF86XK_AudioLowerVolume, spawn, {.v = downvol } },
+        { 0,                       XF86XK_AudioMute, spawn,        {.v = mutevol } },
+        { 0,                       XF86XK_AudioRaiseVolume, spawn, {.v = upvol   } },
+        { 0,                       XF86XK_AudioPlay, spawn,        {.v = medplaypausecmd   } },
+        { 0,                       XF86XK_AudioPrev, spawn,        {.v = mednextcmd   } },
+        { 0,                       XF86XK_AudioNext, spawn,        {.v = medprevcmd   } },
+        { MODKEY|ControlMask,           XK_comma,  cyclelayout,    {.i = -1 } },
+        { MODKEY|ControlMask,           XK_period, cyclelayout,    {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_Return, zoom,           {0} },
 	{ MODKEY,                       XK_Tab,    view,           {0} },
 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
+	{ MODKEY,                       XK_u,      setlayout,      {.v = &layouts[3]} },
+	{ MODKEY,                       XK_o,      setlayout,      {.v = &layouts[4]} },
 	{ MODKEY,                       XK_space,  setlayout,      {0} },
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
 	{ MODKEY|ShiftMask,             XK_f,      togglefullscr,  {0} },
@@ -113,8 +140,8 @@ static Key keys[] = {
 /* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
 static Button buttons[] = {
 	/* click                event mask      button          function        argument */
-	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} },
-	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[2]} },
+	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
+	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
 	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
 	{ ClkStatusText,        0,              Button2,        spawn,          {.v = termcmd } },
 	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
