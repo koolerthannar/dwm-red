@@ -13,8 +13,8 @@ static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
 static const int vertpad            = 0;       /* vertical padding of bar */
 static const int sidepad            = 0;       /* horizontal padding of bar */
-static const char *fonts[]          = { "Terminus:size=14" };
-static const char dmenufont[]       = "Terminus:size=14";
+static const char *fonts[]          = { "Terminus:size=16" };
+static const char dmenufont[]       = "Terminus:size=16";
 static const char norm_fg[]         = "#ffffff"; 
 static const char norm_bg[]         = "#bf0000";
 static const char norm_border[]     = "#1f0000";
@@ -37,7 +37,7 @@ static const Rule rules[] = {
 	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
-	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
+/*	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 }, */
 };
 
 /* layout(s) */
@@ -66,12 +66,13 @@ static const Layout layouts[] = {
 	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
 
 /* media keys */
-static const char *upvol[]   = { "/usr/bin/pactl", "set-sink-volume", "0", "+5%",     NULL };
-static const char *downvol[] = { "/usr/bin/pactl", "set-sink-volume", "0", "-5%",     NULL };
-static const char *mutevol[] = { "/usr/bin/pactl", "set-sink-mute",   "0", "toggle",  NULL };
-static const char *medplaypausecmd[] = { "playerctl", "play-pause",   "0", "toggle",  NULL };
-static const char *mednextcmd[] = { "playerctl", "next",   "0", NULL };
-static const char *medprevcmd[] = { "playerctl", "previous", "0", NULL };
+static const char *upvol[]   = { "/usr/bin/pactl", "set-sink-volume", "2", "+5%",     NULL };
+static const char *downvol[] = { "/usr/bin/pactl", "set-sink-volume", "2", "-5%",     NULL };
+static const char *mutevol[] = { "/usr/bin/pactl", "set-sink-mute",   "2", "toggle",  NULL };
+static const char *medplaypausecmd[] = { "playerctl", "play-pause",   "2", "toggle",  NULL };
+static const char *mednextcmd[] = { "playerctl", "next",   "2", NULL };
+static const char *medprevcmd[] = { "playerctl", "previous", "2", NULL };
+static const char *prtscrcmd[] = { "scrot", "-q", "100", "/home/taco/pics/screenshots/screenshot.png", NULL};
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
@@ -80,11 +81,13 @@ static const char *medprevcmd[] = { "playerctl", "previous", "0", NULL };
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", norm_bg, "-nf", norm_fg, "-sb", sel_bg, "-sf", sel_fg, NULL };
 static const char *termcmd[]  = { "st", NULL };
+static const char *roficmd[]  = { "rofi", "-show", "combi", "-combi-modes", "window,run,ssh", "-modes", "combi", NULL };
 
 #include "movestack.c"
 static Key keys[] = {
 	/* modifier                     key        function        argument */
-	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
+/*	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } }, */
+	{ MODKEY,                       XK_p,      spawn,          {.v = roficmd } }, 
 	{ MODKEY,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
@@ -95,7 +98,7 @@ static Key keys[] = {
 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
-        { MODKEY|ControlMask,           XK_l,      spawn,          SHCMD("xscreensaver-command --lock") },
+        { MODKEY|ControlMask,           XK_l,      spawn,          SHCMD("slock") },
         { 0,                       XF86XK_AudioLowerVolume, spawn, {.v = downvol } },
         { 0,                       XF86XK_AudioMute, spawn,        {.v = mutevol } },
         { 0,                       XF86XK_AudioRaiseVolume, spawn, {.v = upvol   } },
@@ -124,6 +127,7 @@ static Key keys[] = {
 	{ MODKEY,                       XK_minus,  setgaps,        {.i = -1 } },
 	{ MODKEY,                       XK_equal,  setgaps,        {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_equal,  setgaps,        {.i = 0  } },
+  	{ 0,			        XK_Print,                 spawn, { .v = prtscrcmd  } },
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)

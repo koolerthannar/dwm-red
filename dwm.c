@@ -668,7 +668,7 @@ configurenotify(XEvent *e)
 				for (c = m->clients; c; c = c->next)
 					if (c->isfullscreen)
 						resizeclient(c, m->mx, m->my, m->mw, m->mh);
-                                resizebarwin(m);
+                                                resizebarwin(m);
 			}
 			focus(NULL);
 			arrange(NULL);
@@ -831,17 +831,13 @@ drawbar(Monitor *m)
         if(showsystray && m == systraytomon(m) && !systrayonleft)
                 stw = getsystraywidth();
 
-
 	/* draw status first so it can be overdrawn by tags later */
 	if (m == selmon) { /* status is only drawn on selected monitor */
 		drw_setscheme(drw, scheme[SchemeNorm]);
                 tw = TEXTW(stext) - lrpad / 2 + 2; /* 2px extra right padding */
                 drw_text(drw, m->ww - tw - stw, 0, tw, bh, lrpad / 2 - 2, stext, 0);
 	}
-
         resizebarwin(m);
-
-
 	for (c = m->clients; c; c = c->next) {
 		occ |= c->tags;
 		if (c->isurgent)
@@ -2085,8 +2081,8 @@ updatebars(void)
                 if (showsystray && m == systraytomon(m))
                         w -= getsystraywidth();
                 m->barwin = XCreateWindow(dpy, root, m->wx, m->by, w, bh, 0, DefaultDepth(dpy, screen),
-                                CopyFromParent, DefaultVisual(dpy, screen),
-                                CWOverrideRedirect|CWBackPixmap|CWEventMask, &wa);
+				CopyFromParent, DefaultVisual(dpy, screen),
+				CWOverrideRedirect|CWBackPixmap|CWEventMask, &wa);
 		XDefineCursor(dpy, m->barwin, cursor[CurNormal]->cursor);
                 if (showsystray && m == systraytomon(m))
                         XMapRaised(dpy, systray->win);
