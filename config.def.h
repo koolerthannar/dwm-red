@@ -16,11 +16,11 @@ static const int sidepad            = 0;       /* horizontal padding of bar */
 static const char *fonts[]          = { "Terminus:size=16" };
 static const char dmenufont[]       = "Terminus:size=16";
 static const char norm_fg[]         = "#ffffff"; 
-static const char norm_bg[]         = "#bf0000";
-static const char norm_border[]     = "#1f0000";
+static const char norm_bg[]         = "#222222"; /* "#bf0000"; */
+static const char norm_border[]     = "#444444"; /* "#1f0000"; */
 static const char sel_fg[]          = "#ffffff"; 
-static const char sel_bg[]          = "#4d0000";
-static const char sel_border[]      = "#ff0000"; 
+static const char sel_bg[]          = "#bf0000"; /* "#4d0000"; */
+static const char sel_border[]      = "#bf0000"; /* "#ff0000"; */
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
     [SchemeNorm] = { norm_fg, norm_bg, norm_border },
@@ -72,7 +72,7 @@ static const char *mutevol[] = { "/usr/bin/pactl", "set-sink-mute",   "2", "togg
 static const char *medplaypausecmd[] = { "playerctl", "play-pause",   "2", "toggle",  NULL };
 static const char *mednextcmd[] = { "playerctl", "next",   "2", NULL };
 static const char *medprevcmd[] = { "playerctl", "previous", "2", NULL };
-static const char *prtscrcmd[] = { "scrot", "-q", "100", "/home/taco/pics/screenshots/screenshot.png", NULL};
+static const char *prtscrcmd[] = { "flameshot", "gui", "-c", "-p", "/home/taco/pics/screenshots", NULL};
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
